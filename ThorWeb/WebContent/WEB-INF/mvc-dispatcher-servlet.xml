@@ -1,0 +1,89 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:oauth="http://www.springframework.org/schema/security/oauth2"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/security/oauth2 
+        http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+	<context:component-scan
+		base-package="uk.ac.ebi.thor.controller, uk.ac.ebi.thor.service, uk.ac.ebi.thor.dao" />
+
+	<mvc:annotation-driven />
+	
+	<mvc:resources mapping="/resources/**" location="/resources/" cache-period="31556926"/>
+	<mvc:resources mapping="/healthcheck/**" location="/healthcheck/" cache-period="31556926"/>
+
+	<bean id="propertyConfigurerList"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>#{systemProperties['tomcat.hostname']=='ves-ebi-36'?'classpath:/thor_ves-ebi-36.properties':'classpath:/thor_localhost.properties'}
+				</value>
+				<value>classpath:/raw.application.properties</value>
+				<value>classpath:/application.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="properties" ref="propertyConfigurerList" />
+	</bean>
+
+	<bean class="com.google.api.client.json.jackson2.JacksonFactory"
+		id="jacksonFactory" />
+
+	<bean class="com.google.api.client.http.javanet.NetHttpTransport"
+		id="httpTransport" />
+
+	<bean class="org.springframework.web.client.RestTemplate" id="restTemplate" />
+	
+	<bean id="crudDAO" lazy-init="true"
+		class="uk.ac.ebi.literature.db.dao.impl.CrudDAOImpl">
+		<property name="dbUrl" value="${db.url}" />
+	</bean>
+
+	<bean id="credentialDao" lazy-init="true"
+		class="uk.ac.ebi.thor.dao.CredentialDaoJpaImpl">
+ 		<property name="crudDao" ref="crudDAO" />
+	</bean>
+
+<!-- 	<bean id="credentialDao" lazy-init="true" -->
+<!-- 		class="uk.ac.ebi.thor.dao.CredentialDaoMemoryImpl"> -->
+<!-- 	</bean>	 -->
+	
+	<bean id="dataStoreFactory" lazy-init="true"
+		class="uk.ac.ebi.thor.dao.DaoDataStoreFactory">
+		<property name="credentialDao" ref="credentialDao" />
+	</bean>	
+
+	<bean id="dataClaimingService" class="uk.ac.ebi.thor.service.DataClaimingServiceImpl">
+		<property name="serverName" value="${serverAddress}" />
+		<property name="accessTokenUri" value="${accessTokenUri}" />
+		<property name="jsonFactory" ref="jacksonFactory" />
+		<property name="httpTransport" ref="httpTransport" />
+		<property name="clientId" value="${clientId}" />
+		<property name="clientSecret" value="${clientSecret}" />
+		<property name="userAuthorizationUri" value="${userAuthorizationUri}" />
+		<property name="scopes" value="${scopes}" />
+	</bean>
+
+	<bean id="orcidService" class="uk.ac.ebi.thor.service.OrcIdServiceImpl">
+		<property name="orcidRestTemplate" ref="restTemplate" />
+		<property name="orcidSearchUrl" value="${orcidSearchURL}" />
+		<property name="orcidBioUrl" value="${orcidBioURL}" />
+		<property name="orcidInfoUrl" value="${orcidInfoURL}" />
+		<property name="orcidWorksUrl" value="${orcidWorksURL}" />
+		<property name="jsonFactory" ref="jacksonFactory" />
+		<property name="httpTransport" ref="httpTransport" />
+	</bean>
+
+</beans>

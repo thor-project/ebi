@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<orcid-message xmlns="http://www.orcid.org/ns/orcid">
+    <message-version>1.2</message-version>
+    <orcid-profile>
+        <orcid-activities>
+            <orcid-works>
+                <orcid-work>
+                    <work-title>
+                        <title>TEST TEST TEST</title>
+                    </work-title>
+                    <work-type>journal-article</work-type>
+                    <publication-date>
+                        <year>2015</year>
+                    </publication-date>
+                    <work-external-identifiers>
+                        <work-external-identifier>
+                            <work-external-identifier-type>pmid</work-external-identifier-type>
+                            <work-external-identifier-id>989898454</work-external-identifier-id>
+                        </work-external-identifier>
+                    </work-external-identifiers>
+                    <url>www.orcid.org/nono</url>
+                </orcid-work>
+            </orcid-works>
+        </orcid-activities>
+    </orcid-profile>
+</orcid-message>
